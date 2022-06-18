@@ -137,7 +137,7 @@ git push -u origin main
 
 At this point, if you browse your Git repo via your browser, you will see something like this:
 
-TODO: insert image
+![First version of your repo](/_readme_assets/Repo-first-version.png)
 
 ## Setting up the Heroku cli and creating a Heroku app with a Posgres DB
 
