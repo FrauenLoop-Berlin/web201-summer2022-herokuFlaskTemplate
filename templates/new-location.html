@@ -3,6 +3,7 @@
     <script src="{{ url_for('static', filename='new-location.js') }}"></script>
 {% endblock %}
 {% block body %}
+<div id="container">
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
@@ -46,10 +47,5 @@
             {{ form.submit(class="btn btn-outline-info") }}
         </div>
     </form>
-
-    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
-    <script
-    src="https://maps.googleapis.com/maps/api/js?key={{map_key}}&callback=initAutocomplete&libraries=places&v=weekly&channel=2"
-    async
-    ></script>
+</div>    
 {% endblock %}

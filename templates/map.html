@@ -1,7 +1,16 @@
 {% extends "layout.html" %}
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" />
+  
+  <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css"> 
+  <script src="https://js.arcgis.com/4.24/"></script>
   <script src="{{ url_for('static', filename='map.js') }}"></script>
+  <script>
+    require(["esri/config","esri/Map", "esri/views/MapView", "esri/Graphic",
+    "esri/layers/GraphicsLayer", "esri/core/reactiveUtils", "esri/geometry/Circle"], function (esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle) {
+      esriConfig.apiKey = "{{map_key}}";
+      initMap(esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle);
+    });
+  </script>
 {% endblock %}
 {% block body %}
   <nav class="navbar navbar-dark bg-dark">
@@ -16,17 +25,5 @@
       <button class="btn btn-info my-2 my-sm-0" type="submit">Search</button>
     </form>   
   </nav>
-
-  <!--Sometimes the google map will not render / the page is blank. Giving the map div a height prop and putting it 
-    inside another HTML element with fixed size prevents that -->
-  <div style="height: 600px;">
-      <!--Google map-->
-      <div id="map" style="height: 100%;"></div>
-  </div>
-  
-  <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key={{map_key}}&callback=initMap&libraries=geometry&v=weekly"
-    async
-  ></script>
+  <div id="viewDiv"></div>
 {% endblock %}

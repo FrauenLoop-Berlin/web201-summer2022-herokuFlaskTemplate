@@ -1,5 +1,15 @@
-# Heroku / Flask / PostGres app template
+# Heroku / Flask / PostGres app template / Esri Maps instead of Google
 
+## Esri Branch
+
+This is an alternative setup to the one proposed in the main. 
+Most steps are the same, but here the Maps extension being use will be [Esri / ArcGis](https://www.esri.com/en-us/arcgis/products/mapping/overview) instead of Google Maps
+
+If you cloned the repo, use this to switch to this branch:
+
+```
+git checkout esri
+```
 ## What is this template for?
 
 As part of our course, we want to build a location-based web application. We know we will need a database to store some data, and that we want special support for geospatial data (latitude and longitude storage, searches based on distance, etc). Eventually we want to deploy our app somewhere!
@@ -11,7 +21,7 @@ Also, through this guide:
 
 - You setup a Heroku account and can deploy your project there, also from the start.
 - You will create a Postgres DB within Heroku, so you do not need to run a DB engine locally on your machine.
-- The template includes sample code to show a Google Map and some markers in it
+- The template includes sample code to show an Esri Leaflet Map and some markers in it
 - The template also includes a sample model with some prestored locations, just to test out the map functionality and make sure PostGis extension works too.
 
 The idea is you use this to get a first working version of these basic functionalities, and then start changing things to build your own app.
@@ -27,7 +37,7 @@ If you are running on a Mac or some different setup, some stuff might be slightl
 - A GitHub account and a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) so you can commit stuff from the command line
 - Git installed in your machine so you can execute git commands
 - Python installed in your machine so you can execute Python commands and run Pyton scripts. Make sure you have version **3.6 or superior**. You also need to use pip, can't remember if that needed to be installed separately.
-- A Google Maps API Key
+- An Esri Maps API Key (You can get one here: https://developers.arcgis.com/esri-leaflet/get-started/)
 - Might be needed: A local installation of [Postgres](https://www.postgresql.org/download/): The instructions given here will allow you to connect to the DB hosted in Heroku, even when you are running locally. Regardless, there are a few steps that may not work if you have no local Postgres installed. These are: 
   - the install of dependency `psycopg2` (you can workaround this one by installing `psycopg2-binary` instead)
   - Connecting to the Heroku db by using `heroku pg:psql`. To ensure this step will work fine, try executing the command `psql` from your command line. If the command is found, even when you see some error in connection to server or similar, you are OK. Only if the command is not found / recognized, then you might need to install Postgres / add this to your PATH. 
@@ -273,7 +283,7 @@ First, you want to get the app running locally, because if something did not wor
 To run the sample code you copied from this template, two environment variables need to be set:
 
 - DATABASE_URL: this is the connection string for the PostGres database. Because the DB is hosted by Heroku, it also defines the user / password / etc for us. And these are 'ephemeral' credentials that heroku will rotate periodically to make your db more secure. We don't know how often the credentials change, but we should assume they will, so no hardcoding these anywhere. To get the proper value you can use the heroku cli, and below you get a bit of command line magic to directly put that into a local env variable.
-- GOOGLE_MAPS_API_KEY: You need to get this for yourself (via the Google app console). It will be sent to the Google Maps API to render the map on the initial page of the sample app.
+- MAPS_API_KEY: You need to get this for yourself (via the Esri developer console). It will be sent to the Maps API to render the map on the initial page of the sample app and any place where a map is used.
 
 To get the data you need to set DATABASE_URL, run:
 
@@ -300,45 +310,44 @@ To set the environment variables run:
 **Mac / Linux**
 ```
 export DATABASE_URL=postgres://XXXXXXX:YYYYYYYYYYYYYYYYYYYYYYY@ec2-XXX-XXX-XXX-XXX.compute-X.amazonaws.com:XXXX/XXXXXXXXXXXXXXX <<< replace this with your string from above
-export GOOGLE_MAPS_API_KEY=ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh  <<<<< replace this with your API key from Google Maps
-```
+export MAPS_API_KEY=ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh  <<<<< replace this with your API key
 
 **Windows / Option 1**
 ```
 SET DATABASE_URL=postgres://XXXXXXX:YYYYYYYYYYYYYYYYYYYYYYY@ec2-XXX-XXX-XXX-XXX.compute-X.amazonaws.com:XXXX/XXXXXXXXXXXXXXX <<< replace this with your string from above
-SET GOOGLE_MAPS_API_KEY=ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh  <<<<< replace this with your API key from Google Maps
+SET MAPS_API_KEY=ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh  <<<<< replace this with your API key
 ```
 
 **Windows / Option 2**
 (In the PowerShell the above commands were not really working, `echo %DATABASE_URL%` returned just %DATABASE_URL% which is not OK, and the bellow commands worked )
 ```
 $env:DATABASE_URL = "postgres://XXXXXXX:YYYYYYYYYYYYYYYYYYYYYYY@ec2-XXX-XXX-XXX-XXX.compute-X.amazonaws.com:XXXX/XXXXXXXXXXXXXXX" <<< replace this with your string from above
-$env:GOOGLE_MAPS_API_KEY = "ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh" <<<<< replace this with your API key from Google Maps
+$env:MAPS_API_KEY = "ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh" <<<<< replace this with your API key
 ```
 
 :eight_pointed_black_star: The environment variables you are setting now only 'exist' for as long as you keep the terminal / Powershell session open. When you close it and start again, the variables are gone, and you have to set them again! So you will do this step every time you start working on your app.
 
-The value for GOOGLE_MAPS_API_KEY in my sample is just a dummy value, you need to get the real api key value from your Google Apps console and use that value instead.
-Remember never to commit this API key to your repo because that is public and the key could get exploited / used by other people. Use of Google Maps API costs money after some limits, so be careful. If you publish your key by mistake you can invalidate it and create a new one.
+The value for MAPS_API_KEY in my sample is just a dummy value, you need to get the real api key value from your Esri developer console and use that value instead.
+Remember never to commit this API key to your repo because that is public and the key could get exploited / used by other people. 
 
 If you want to verify the values of the env variables, use:
 
 **Mac / Linux**
 ```
 echo $DATABASE_URL
-echo $GOOGLE_MAPS_API_KEY
+echo $MAPS_API_KEY
 ```
 
 **Windows / Option 1**
 ```
 echo %DATABASE_URL%
-echo %GOOGLE_MAPS_API_KEY%
+echo %MAPS_API_KEY%
 ```
 
 **Windows / Option 2**
 ```
 $env:DATABASE_URL
-$env:GOOGLE_MAPS_API_KEY
+$env:MAPS_API_KEY
 ```
 
 Finally, to run the app:
@@ -410,8 +419,7 @@ Before deploy, a small extra step. Remember we need 2 environment variables for 
 
 **Mac / Linux / Windows **
 ```
-heroku config:set GOOGLE_MAPS_API_KEY=ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh <<<<< replace this with your API key from Google Maps
-```
+heroku config:set MAPS_API_KEY=ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh <<<<< replace this with your API key
 
 Now all is ready. To deploy that current state of your main branch into your Heroku app, run:
 
@@ -434,7 +442,7 @@ If all went well, your sample app is now running in Heroku as well! Check the pr
 
 ## What now?
 
-The sample code has some useful functionality: it is taking the database connection string from the already set Heroku env variable, it is using another config variable for the Google Maps key so that is not hardcoded in your source code (because the Google API key cannot be commited to GitHub!). It is also storing some sample data with lat / long and querying for it when you zoom / reposition the map. You can take a closer look at all this, so you then decide how to extend it.
+The sample code has some useful functionality: it is taking the database connection string from the already set Heroku env variable, it is using another config variable for the Esri Maps key so that is not hardcoded in your source code (because the API key cannot be commited to GitHub!). It is also storing some sample data with lat / long and querying for it when you zoom / reposition the map. You can take a closer look at all this, so you then decide how to extend it.
 
 You will keep making changes to the app, adding the functionality of your project. Everything in the template is just a sample, you can change / remove things as you wish.
 Each time you have some new functionality working commit it to GitHub, and then to Heroku, so you make sure it works there as well.

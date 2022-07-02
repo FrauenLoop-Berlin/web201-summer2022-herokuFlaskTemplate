@@ -1,4 +1,10 @@
 let map;
+let view;
+let graphicsLayer;
+
+let cGraphic; // this is ugly, the class Graphic gets passed to initMap and I want to make it global...
+let cCircle;
+
 let markers;
 
 let geocoder;
@@ -9,115 +15,46 @@ let queryZoom;
 //When the user clicks on a marker, it will become
 // the selected one:
 var selectedMarker = null;
-let selectedMarkerPopup, Popup;
 
-var DEFAULT_ICON = {
-  url: "http://maps.google.com/mapfiles/kml/paddle/grn-blank.png"
-}
-
-var SELECTED_ICON = {
-  url: "http://maps.google.com/mapfiles/kml/paddle/grn-stars.png"
-}
-
-function initMap() {
+function initMap(esriConfig, Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle) {
   console.log('InitMap')
-  
-  geocoder = new google.maps.Geocoder();
 
-  map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: 52.5200, lng: 13.4050 }, //We start at the center of Berlin
-    zoom: 11,
-    minZoom: 6,
-    maxZoom: 19,
-    // disabling some controls. Reference: https://developers.google.com/maps/documentation/javascript/controls
-    streetViewControl: false, 
-    fullscreenControl: false,
-    mapTypeControl: false,
-    mapTypeId: google.maps.MapTypeId.ROADMAP
+  // I will use these later to create elements in the map 
+  cGraphic = Graphic;
+  cCircle = Circle;
+
+  map = new Map({
+    basemap: "arcgis-topographic" // Basemap layer service
   });
 
-  google.maps.event.addListener(map, 'idle', function(){
-    var newZoom = map.getZoom();
-    var newCenter = map.getCenter();
+  graphicsLayer = new GraphicsLayer();
+  map.add(graphicsLayer);
 
-    console.log("Map  event triggers, zoom:"+newZoom+", center: "+newCenter);
-
-    // We want to avoid re-rendering the markers if the change
-    // in position within the map is too small. Also, if we are zooming in
-    // without changing the center significantly, there is also no need
-    // to call the backend again for new points
-    var distanceChange = (queryCenter == null) ? 0 : google.maps.geometry.spherical.computeDistanceBetween (queryCenter, newCenter);
-
-    if (queryCenter == null || queryZoom == null || distanceChange > 100 || newZoom < queryZoom) { //if we have not queried for markers yet, query
-      refreshMarkers(newCenter, newZoom);
-    }  
+  view = new MapView({
+    map: map,
+    center: [13.4050, 52.5200], // Longitude, latitude. We start at the center of Berlin
+    zoom: 13, // Zoom level
+    maxZoom: 18,
+    minZoom: 5,
+    container: "viewDiv" // Div element
+  });
+ 
+  // Watch view's stationary property for becoming true.
+  reactiveUtils.when(() => view.stationary === true, () => {
+      if (view.extent) {
+        refreshMarkers();
+      }
   });
 
-    /**
-   * A customized popup on the map.
-   */
-    Popup = class Popup extends google.maps.OverlayView {
-      position;
-      containerDiv;
-      constructor(position, contentText) {
-        super();
-        this.position = position;
-        
-        // This zero-height div is positioned at the bottom of the bubble.
-        const bubbleAnchor = document.createElement("div");
-        const content = document.createElement("div");
-        content.classList.add("popup-bubble");
-        content.innerHTML = contentText;
-
-        bubbleAnchor.classList.add("popup-bubble-anchor");
-        bubbleAnchor.appendChild(content);
-        // This zero-height div is positioned at the bottom of the tip.
-        this.containerDiv = document.createElement("div");
-        this.containerDiv.classList.add("popup-container");
-        this.containerDiv.appendChild(bubbleAnchor);
-        // Optionally stop clicks, etc., from bubbling up to the map.
-        Popup.preventMapHitsAndGesturesFrom(this.containerDiv);
-      }
-      /** Called when the popup is added to the map. */
-      onAdd() {
-        this.getPanes().floatPane.appendChild(this.containerDiv);
-      }
-      /** Called when the popup is removed from the map. */
-      onRemove() {
-        if (this.containerDiv.parentElement) {
-          this.containerDiv.parentElement.removeChild(this.containerDiv);
-        }
-      }
-      /** Called each frame when the popup needs to draw itself. */
-      draw() {
-        const divPosition = this.getProjection().fromLatLngToDivPixel(
-          this.position
-        );
-        // Hide the popup when it is far out of view.
-        const display =
-          Math.abs(divPosition.x) < 4000 && Math.abs(divPosition.y) < 4000
-            ? "block"
-            : "none";
-
-        if (display === "block") {
-          this.containerDiv.style.left = divPosition.x + "px";
-          this.containerDiv.style.top = divPosition.y + "px";
-        }
-
-        if (this.containerDiv.style.display !== display) {
-          this.containerDiv.style.display = display;
-        }
-      }
-    }
 }
 
 var radiusToZoomLevel = [
-  800000, // zoom: 0
-  800000, // zoom: 1
-  800000, // zoom: 2
-  800000, // zoom: 3
-  800000, // zoom: 4
-  800000, // zoom: 5 
+  2600000, // zoom: 0
+  2600000, // zoom: 1
+  2600000, // zoom: 2
+  2600000, // zoom: 3
+  2600000, // zoom: 4
+  1600000, // zoom: 5 
   800000, // zoom: 6
   400000, // zoom: 7
   200000, // zoom: 8
@@ -126,32 +63,37 @@ var radiusToZoomLevel = [
   26000, // zoom: 11
   13000, // zoom: 12
   6500, // zoom: 13
-  3500, // zoom: 14
-  1800, // zoom: 15
-  900, // zoom: 16
-  430, // zoom: 17
-  210, // zoom: 18
-  120,  // zoom: 19
+  3250, // zoom: 14
+  1595, // zoom: 15
+  800, // zoom: 16
+  405, // zoom: 17
+  200, // zoom: 18
 ];
 
-function refreshMarkers(mapCenter, zoomLevel) {
+function refreshMarkers() {
   console.log("refreshing markers")
-  //Update query cener and zoom so we know in referenec to what
+
+  //Update query center and zoom so we know in referenec to what
   //we queried for markers the last time and can decide if a re-query is needed
-  queryCenter = mapCenter;
-  queryZoom = zoomLevel;
+  queryCenter = [view.center.latitude, view.center.longitude];
+  queryZoom = view.zoom;
+
+  // This attempts to adjust the radiusToZoomLevel to the size of the screen so we
+  // search in a radius at least as big as of what is visible on the map right now
+  let mapSizeProportional = Math.max(...view.size)/1000;
+  let actualRadius = Math.round(radiusToZoomLevel[queryZoom] * mapSizeProportional);
 
   // If we had already some markers in the map, we need to clear them
   clearMarkers();
 
-  // This will helpt to understand the radius, its for debug only
-  //createCircle(mapCenter,radiusToZoomLevel[zoomLevel]);
+  // This will helpt to understand the radius of search, its for debug only
+  //createCircle(queryCenter,actualRadius, queryZoom);
 
   // we call the backend to get the list of markers
   var params = {
-    "lat" : mapCenter.lat(),
-    "lng" : mapCenter.lng(),
-    "radius" : radiusToZoomLevel[zoomLevel]
+    "lat" : queryCenter[0], 
+    "lng" : queryCenter[1], 
+    "radius" : actualRadius
   }
   var url = "/api/get_items_in_radius?" + dictToURI(params) 
   loadJSON(url, function(response) {
@@ -171,116 +113,82 @@ function refreshMarkers(mapCenter, zoomLevel) {
 }
 
 function placeItemsInMap(items) {
-    // Add some markers to the map.
-    // Note: The code uses the JavaScript Array.prototype.map() method to
-    // create an array of markers based on the given "items" array.
-    // The map() method here has nothing to do with the Google Maps API.
-    markers = items.map(function(item, i) {
-      var marker = new google.maps.Marker({
-        map: map,
-        position: item.location
+  // Add some markers to the map.
+  // Note: The code uses the JavaScript Array.prototype.map() method to
+  // create an array of markers based on the given "items" array.
+  // The map() method here has nothing to do with the Maps API.
+  markers = items.map(function(item, i) {    
+      const point = { //Create a point
+          type: "point",
+          longitude: item.location.lng,
+          latitude: item.location.lat
+      };
+      const simpleMarkerSymbol = {
+          type: "simple-marker",
+          color: [226, 119, 40],  // Orange
+          outline: {
+              color: [255, 255, 255], // White
+              width: 1
+          }
+      };
+      const pointGraphic = new cGraphic({
+          geometry: point,
+          symbol: simpleMarkerSymbol,
+          popupTemplate: {
+            title: item.description,
+            content: "Here we could put more information about this item",
+            actions: [{
+              title: "View Details",
+              id: "view",
+              param: item.id // this is an additional attribute I added to be able to know the item id and costruct the detail page url on click
+            }]
+          }
       });
-      marker.setIcon(DEFAULT_ICON);
+      graphicsLayer.add(pointGraphic);
 
-      //we attach the item to the marker, so when the marker is selected
-      //we can get all the item data to fill the highlighted profile box under
-      // the map 
-      marker.profile = item;
+      return pointGraphic;
+  });
 
-      google.maps.event.addListener(marker, 'click', function(evt) {
-        markerClick(this);
-      });
+  // this handles the click on "View Details"
+  view.popup.on("trigger-action", (event) => {
+    if (event.action.id === "view") {
+      window.open("/detail?id="+event.action.param,"_top")
+    }
+  });  
 
-      return marker;
-    });
-
-    /*console.log(markers);
-    console.log(markers.length);*/
+  // console.log(markers);
+  // console.log(markers.length);
 }
 
 function clearMarkers() {
-  if (markers) {
-    markers.map(function(marker, i) {
-      marker.setMap(null);
-    });
-  }
-    
-  markers = new Array();
-  selectedMarker = null;
+  graphicsLayer.removeAll();
 }
 
-function searchAddressSubmit() {
-  console.log('searchAddressSubmit');
+function createCircle(latLng,radius, zoomLevel) {
+  console.log("MAP SIZE: "+view.size);
+  console.log("ZOOM LEVEL: "+zoomLevel);
+  console.log("Radius: "+radius);
 
-  const address = document.getElementById("search_address").value;
-  geocoder.geocode({ address: address }, (results, status) => {
-    if (status === "OK") {
-      // If you want to provide feedback to the user on the map page:
-      //document.getElementById('addressHelpBlock').innerHTML="Perfect! Here are the results near you:";
-      map.setZoom(15);
-      map.setCenter(results[0].geometry.location);
-    } else {
-      console.log("Geocode was not successful for the following reason: " + status);
-      // If you want to provide feedback to the user on the map page:
-      //document.getElementById('addressHelpBlock').innerHTML="Sorry! That search did not work, try again!";
-    }
+  const circleGeometry = new cCircle({
+    center: [ latLng[1], latLng[0] ],
+    geodesic: true,
+    numberOfPoints: 100,
+    radius: radius,
+    radiusUnit: "meters"
   });
-
-  //prevent refresh
-  return false;
-}
-
-function markerClick(marker) {
-  console.log('Marker clicked');
-  console.log(marker);
-
-  // de-select the previously active marker, if present
-  if (selectedMarker) selectedMarker.setIcon(DEFAULT_ICON);
-  marker.setIcon(SELECTED_ICON);
-
-  // remove the popup for the previously selected marker
-  if (selectedMarkerPopup) {
-    selectedMarkerPopup.setMap(null);
-  }
   
-  // update selected marker reference
-  selectedMarker = marker;
-
-  // Show popup for the clicked marker
-  selectedMarkerPopup = new Popup(
-    selectedMarker.position,
-    "<a href='/detail?id="+selectedMarker.profile.id + "'>" +selectedMarker.profile.description + "</a>"
-  );
-  selectedMarkerPopup.setMap(map);
-}
-
-// this is just for debugging purposes!
-// To be able to better understand if the radius in which I search for 
-// teachers is well adjussted to the level of zoom of the map, 
-// I add this function to draw a circle showing the radius
-function createCircle(latLng,radius) {
-	options = getDefaultDrawingOptions();
-
-	options['map']=map;
-	options['center']=latLng;
-	options['radius']=radius;
-
-	var circle = new google.maps.Circle(options);
-	circle.drawing_type = "circle";
-}
-
-function getDefaultDrawingOptions() {
-  options = new Array();
-  options['strokeColor']  = "#000000";
-  options['strokeOpacity'] = 0.8;
-  options['strokeWeight'] = 2;
-  options['fillOpacity'] = 0;
-  options['geodesic'] = false;
-  options['editable'] = false;
-  options['draggable'] = false;
-	
-	return options;
-}
+  graphicsLayer.add(new cGraphic({
+    geometry: circleGeometry,
+    symbol: {
+      type: "simple-fill",
+      style: "none",
+      outline: {
+        width: 3,
+        color: "red"
+      }
+    }
+  }));
+}  
 
 function loadJSON(url, callback) {   
   var xobj = new XMLHttpRequest();
