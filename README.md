@@ -21,7 +21,7 @@ Also, through this guide:
 
 - You setup a Heroku account and can deploy your project there, also from the start.
 - You will create a Postgres DB within Heroku, so you do not need to run a DB engine locally on your machine.
-- The template includes sample code to show an Esri Leaflet Map and some markers in it
+- The template includes sample code to show an Esri/ArcGIS Map and some markers in it
 - The template also includes a sample model with some prestored locations, just to test out the map functionality and make sure PostGis extension works too.
 
 The idea is you use this to get a first working version of these basic functionalities, and then start changing things to build your own app.
@@ -37,7 +37,7 @@ If you are running on a Mac or some different setup, some stuff might be slightl
 - A GitHub account and a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) so you can commit stuff from the command line
 - Git installed in your machine so you can execute git commands
 - Python installed in your machine so you can execute Python commands and run Pyton scripts. Make sure you have version **3.6 or superior**. You also need to use pip, can't remember if that needed to be installed separately.
-- An Esri Maps API Key (You can get one here: https://developers.arcgis.com/esri-leaflet/get-started/)
+- An Esri Maps API Key (You can get one here: https://developers.arcgis.com/javascript/latest/get-started/#2-get-an-api-key)
 - Might be needed: A local installation of [Postgres](https://www.postgresql.org/download/): The instructions given here will allow you to connect to the DB hosted in Heroku, even when you are running locally. Regardless, there are a few steps that may not work if you have no local Postgres installed. These are: 
   - the install of dependency `psycopg2` (you can workaround this one by installing `psycopg2-binary` instead)
   - Connecting to the Heroku db by using `heroku pg:psql`. To ensure this step will work fine, try executing the command `psql` from your command line. If the command is found, even when you see some error in connection to server or similar, you are OK. Only if the command is not found / recognized, then you might need to install Postgres / add this to your PATH. 
