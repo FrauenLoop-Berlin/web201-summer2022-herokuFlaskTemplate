@@ -419,13 +419,14 @@ Now all your code is up-to-date with GitHub. This is important because you push 
 
 Before deploy, a small extra step. Remember we need 2 environment variables for the sample code to work. DATABASE_URL is by default provided by Heroku because we have a DB attached to our app. The second env variable is something we define, so we need to set it manually as a Heroku config variable:
 
-**Mac / Linux / Windows **
+**Mac / Linux / Windows**
 ```
 heroku config:set MAPS_API_KEY=ssdfsdfsAAqfdfsuincswdfgcxhmmjzdfgsevfh <<<<< replace this with your API key
+```
 
 Now all is ready. To deploy that current state of your main branch into your Heroku app, run:
 
-**Mac / Linux / Windows **
+**Mac / Linux / Window **
 ```
 git push heroku main
 ```
