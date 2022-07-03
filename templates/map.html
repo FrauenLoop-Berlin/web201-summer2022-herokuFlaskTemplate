@@ -1,14 +1,13 @@
 {% extends "layout.html" %}
 {% block head %}
-  
   <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css"> 
   <script src="https://js.arcgis.com/4.24/"></script>
   <script src="{{ url_for('static', filename='map.js') }}"></script>
   <script>
     require(["esri/config","esri/Map", "esri/views/MapView", "esri/Graphic",
-    "esri/layers/GraphicsLayer", "esri/core/reactiveUtils", "esri/geometry/Circle"], function (esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle) {
+    "esri/layers/GraphicsLayer", "esri/core/reactiveUtils", "esri/geometry/Circle", "esri/rest/locator"], function (esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle, locator) {
       esriConfig.apiKey = "{{map_key}}";
-      initMap(esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle);
+      initMap(esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle, locator);
     });
   </script>
 {% endblock %}

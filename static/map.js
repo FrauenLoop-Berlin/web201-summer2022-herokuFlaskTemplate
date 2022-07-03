@@ -4,6 +4,7 @@ let graphicsLayer;
 
 let cGraphic; // this is ugly, the class Graphic gets passed to initMap and I want to make it global...
 let cCircle;
+let esriLocator;
 
 let markers;
 
@@ -16,12 +17,15 @@ let queryZoom;
 // the selected one:
 var selectedMarker = null;
 
-function initMap(esriConfig, Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle) {
+function initMap(esriConfig, Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle, locator) {
   console.log('InitMap')
 
   // I will use these later to create elements in the map 
   cGraphic = Graphic;
   cCircle = Circle;
+
+  // I will use this later from the searchSubmitFunction
+  esriLocator = locator;
 
   map = new Map({
     basemap: "arcgis-topographic" // Basemap layer service
@@ -189,6 +193,40 @@ function createCircle(latLng,radius, zoomLevel) {
     }
   }));
 }  
+
+function searchAddressSubmit() {
+  // Took bits and pieces from here for this feature: https://developers.arcgis.com/documentation/mapping-apis-and-services/search/geocoding/
+  console.log('searchAddressSubmit');
+
+  const address = document.getElementById("search_address").value;
+
+  const geocodingServiceUrl = "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer";
+
+  const params = {
+    address: {
+      "address": address
+    }
+  }
+
+  esriLocator.addressToLocations(geocodingServiceUrl, params).then((results) => {
+    if (results.length) {
+      let firstResult = results[0];
+      console.log(firstResult.address);
+
+      view.goTo({
+        target: firstResult.location,
+        zoom: 13
+      });
+    } else {
+      console.log("Geocode was not successful");
+      // If you want to provide feedback to the user on the map page:
+      //document.getElementById('addressHelpBlock').innerHTML="Sorry! That search did not work, try again!";
+    } 
+  });
+
+  //prevent refresh
+  return false;
+}
 
 function loadJSON(url, callback) {   
   var xobj = new XMLHttpRequest();

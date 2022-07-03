@@ -1,48 +1,33 @@
 let markers = [];
 let map = null;
 
-function initAutocomplete() {
-    map = new google.maps.Map(document.getElementById("map"), {
-      center: { lat: 52.5200, lng: 13.4050 }, //We start at the center of Berlin
-      zoom: 13,
-      mapTypeId: "roadmap",
-    });
-    // Create the search box and link it to the UI element.
-    const input = document.getElementById("lookup_address");
-    const searchBox = new google.maps.places.SearchBox(input);
-  
-    // Bias the SearchBox results towards current map's viewport.
-    map.addListener("bounds_changed", () => {
-      searchBox.setBounds(map.getBounds());
-    });
-  
-    // Listen for the event fired when the user selects a prediction and retrieve
-    // more details for that place.
-    searchBox.addListener("places_changed", () => {
-      const places = searchBox.getPlaces();
-  
-      if (places.length == 0) {
-        return;
-      }
+function initAutocomplete(esriConfig,Map, MapView, Search) {
+  map = new Map({
+    basemap: "arcgis-topographic" // Basemap layer service
+  });
 
-      console.log('How many places did I get? '+ places.length)
-
-      // We take only the first place and ignore the (possible) rest
-      let place = places[0];
-
-      if (!place.geometry || !place.geometry.location) {
-        console.log("Returned place contains no geometry");
-        return;
-      }
+  view = new MapView({
+      map: map,
+      center: [13.4050, 52.5200], // Longitude, latitude. We start at the center of Berlin
+      zoom: 13, // Zoom level
+      maxZoom: 18,
+      minZoom: 5,
+      container: "viewDiv" // Div element
+  });  
   
-      placeMarker(place.geometry.location);
-    });
+  const searchWidget = new Search({
+      view: view
+  });
 
-    // Additionally, if the user clicks anywhere on the map, they create 
-    // a Marker there
-    google.maps.event.addListener(map, 'click', function(event) {
-        placeMarker(event.latLng);
-    });
+  // Listen for the event fired when the user selects a prediction
+  searchWidget.on("select-result", function(event){
+      console.log("Select result selected", event);
+      updateFormCoordinates(event.result.extent.center.latitude, event.result.extent.center.longitude);
+  });
+  
+  view.ui.add(searchWidget, {
+    position: "top-right"
+  });
 }
 
 function placeMarker(latLng) {
