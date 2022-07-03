@@ -382,7 +382,7 @@ Make sure you do not have any local changes not commited to main branch at this 
 git status
 ```
 
-Should at most show `__pycache__/` as uncommited (you do not need to commit this directory ever, you can add it to .gitignore later)
+Should only show local files that are not meant to be commited like `__pycache__/` (you do not need to commit this directory ever, you can add it to .gitignore later)
 
 ```
 On branch main
