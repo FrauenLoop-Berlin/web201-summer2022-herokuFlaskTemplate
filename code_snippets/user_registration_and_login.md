@@ -407,23 +407,11 @@ login_manager.login_message_category = 'info'
 Now that we can login users, we can make new location page only accesible to logged in users. If you are not logged in to the site you should not be able to do that.
 Also, if the user is not logged in we will show the login / register links in nav bar, but if the user is already logged, we will instead show a logout.
 
-Modify the NavBar in ``map.html`` template so it looks like this:
+Modify the NavBar in ``map.html``, what you whant to change is how the the items are displayed, now conditionally (with an if block) 
+depending on whether we have a current user that is authenticated / logged in, or not:
 
 ```
-{% extends "layout.html" %}
-{% block head %}
-  <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css"> 
-  <script src="https://js.arcgis.com/4.24/"></script>
-  <script src="{{ url_for('static', filename='map.js') }}"></script>
-  <script>
-    require(["esri/config","esri/Map", "esri/views/MapView", "esri/Graphic",
-    "esri/layers/GraphicsLayer", "esri/core/reactiveUtils", "esri/geometry/Circle", "esri/rest/locator"], function (esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle, locator) {
-      esriConfig.apiKey = "{{map_key}}";
-      initMap(esriConfig,Map, MapView, Graphic, GraphicsLayer, reactiveUtils, Circle, locator);
-    });
-  </script>
-{% endblock %}
-{% block body %}
+  ...
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <span class="navbar-brand mb-0 h1">Navbar</span>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -458,11 +446,9 @@ Modify the NavBar in ``map.html`` template so it looks like this:
       </form>   
     </div>
   </nav>
-  <div id="viewDiv"></div>
-{% endblock %}
+  ....
 ```
-
-There are also a small additional style (this goes in ``styles.css``):
+You might need to tweak some additional styles to make everything look ok, I added this to ``styles.css``:
 ```
 .navbar li.nav-item {
   color: #fff;    
@@ -483,7 +469,7 @@ You can do this step if the relation makes sense for your app use case. For exam
 create entries for lost pets, and then you want to show on the site the details of each pet, along with the user that created the entry 
 (because the owner of the lost pet will want to contact them for more details).
 
-Otherwise, you might take a look at these changes to understand how to create a type of [relationship](https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html) 
+Otherwise, you might take a look at these changes to understand how to create a type of [relationship](https://www.techopedia.com/definition/24438/relationship-databases#:~:text=A%20relationship%2C%20in%20the%20context,while%20linking%20disparate%20data%20items.) (here is some more references in [sqlalchemy documentation](https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)) 
 between the models in your app.
 
 First, Add a reference to the User from the ``SampleLocation`` model (I mark with <<< the lines that change or were added):
