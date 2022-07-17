@@ -359,6 +359,12 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')    
 ```
 
+Some additional imports are needed in ``forms.py`` now (BooleanField is the new thing):
+
+```
+from wtforms import StringField, SubmitField, HiddenField, PasswordField, BooleanField
+```
+
 You need a new template file, called ``login.html``:
 ```
 {% extends "layout.html" %}
@@ -452,9 +458,7 @@ You need to add the code to handle the login, and also the loading of an user an
 
 Again, there is some additional classes to import at the top of the file:
 ```
-from forms import NewLocationForm, RegistrationForm, LoginForm
-from models import User
-from sqlalchemy.exc import IntegrityError
+from forms import LoginForm
 from flask_login import login_user, logout_user, login_required, current_user, login_manager, LoginManager
 ```
 
@@ -469,6 +473,12 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 ```
+
+Now, there is no link in the site yet, but you can try to access ``/login`` on your app to try out the login form.
+You should be able to use some usser data you registered, to login successfully.
+At this point, because we do not show anywhere in the site if the user is logged in or not, after a successfull login you get redirected
+to the home page and nothing else changes. It is hard to tell if login is working / we have a logged in user or not.
+Next step will be to improve on that, we will change the navigation bar to reflect if the user is logged in or not!
 
 ### Step 5 - Use the current_user to display conditionally some content (login link / new location)
 
