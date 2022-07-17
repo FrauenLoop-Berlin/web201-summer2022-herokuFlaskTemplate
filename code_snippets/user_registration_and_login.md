@@ -275,13 +275,9 @@ You need a new template file, called ``registration.html``:
 {% endblock body %}
 ```
 
-You need to modify / add some imports at the top of the page:
-```
-from wtforms import StringField, SubmitField, HiddenField, PasswordField, BooleanField
-from wtforms.validators import DataRequired, Length, Email, EqualTo
-```
 
 You need to add the code to handle this new registration page / route in your ``app.py``:
+(add this at the end of all other routes in app.py)
 ```
    @app.route("/register", methods=['GET', 'POST'])
     def register():
