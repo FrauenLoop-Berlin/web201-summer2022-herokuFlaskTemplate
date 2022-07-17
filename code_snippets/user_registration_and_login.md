@@ -308,6 +308,27 @@ You need to add the code to handle this new registration page / route in your ``
         return render_template('registration.html', form=form)   
 ```
 
+**Update 1:** Because th registration.html is making reference to ``url_for('login')`` we need to create at least a stub of this
+route, so the call in the registration template works. We can add an empty route for now, that will be replaced with the complete
+implementation in the next step:
+
+(add it after the route for register):
+```
+    @app.route("/login", methods=['GET', 'POST'])
+    def login():
+        pass
+
+```
+
+Some stuff needs to be added to the imports of ``app.py``:
+
+```
+from forms import RegistrationForm
+from models import User
+from sqlalchemy.exc import IntegrityError
+import hashlib
+```
+
 With these bits you can hit /register on your browser against your running app and try out the registration page.
 We do not have a link to register from the site yet, but we will add it later, maybe to the navigation bar in the home page.
 
