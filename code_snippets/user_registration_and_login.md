@@ -181,47 +181,98 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo
 
 You need a new template file, called ``registration.html``:
 ```
-class RegistrationForm(FlaskForm):
-    fullname = StringField(
-        'Full Name', 
-        validators=
-            [DataRequired(), 
-            Length(min=2, max=200)
-        ]
-    )
-
-    username = StringField(
-        'Username / Display Name', 
-        validators=
-            [DataRequired(), 
-            Length(min=2, max=20)
-        ]
-    )
-
-    email = StringField(
-        'Email',
-        validators=[
-            DataRequired(), 
-            Email()
-        ]
-    )
-
-    password = PasswordField(
-        'Password',
-        validators=[
-            DataRequired()
-        ]
-    )
-
-    confirm_password = PasswordField(
-        'Confirm Password',
-        validators=[
-            DataRequired(),
-            EqualTo('password')
-        ]
-    )
-
-    submit = SubmitField('Sign up')  
+{% extends "layout.html" %}
+{% block body %}
+<div id="container">
+    {% for field, errors in form.errors.items() %}
+    <div class="alert alert-error">
+        {{ form[field].label }}: {{ ', '.join(errors) }}
+    </div>
+    {% endfor %}
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Join Today</legend>
+                <div class="form-group">
+                    {{ form.fullname.label(class="form-control-label") }}  
+                    {% if form.fullname.errors %}
+                        {{ form.fullname(class="form-control form-control-lg is-invalid") }} 
+                        <div class="invalid-feedback">
+                            {% for error in form.fullname.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>  
+                    {% else %}    
+                        {{ form.fullname(class="form-control form-control-lg") }} 
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.username.label(class="form-control-label") }}  
+                    {% if form.username.errors %}
+                        {{ form.username(class="form-control form-control-lg is-invalid") }} 
+                        <div class="invalid-feedback">
+                            {% for error in form.username.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>  
+                    {% else %}    
+                        {{ form.username(class="form-control form-control-lg") }} 
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label(class="form-control-label") }}    
+                    {% if form.email.errors %}
+                    {{ form.email(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>  
+                    {% else %}    
+                        {{ form.email(class="form-control form-control-lg") }}
+                    {% endif %} 
+                </div>  
+                <div class="form-group">
+                    {{ form.password.label(class="form-control-label") }}      
+                    {% if form.password.errors %}
+                        {{ form.password(class="form-control form-control-lg is-invalid") }} 
+                        <div class="invalid-feedback">
+                            {% for error in form.password.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>  
+                    {% else %}    
+                        {{ form.password(class="form-control form-control-lg") }} 
+                    {% endif %}
+                </div>    
+                <div class="form-group">
+                    {{ form.confirm_password.label(class="form-control-label") }}    
+                      
+                    {% if form.confirm_password.errors %}
+                        {{ form.confirm_password(class="form-control form-control-lg is-invalid") }} 
+                        <div class="invalid-feedback">
+                            {% for error in form.confirm_password.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>  
+                    {% else %}    
+                        {{ form.confirm_password(class="form-control form-control-lg") }} 
+                    {% endif %}
+                </div>            
+            </fieldset>
+            <div class="form-group">
+                {{ form.submit(class='btn btn-outline-info')}}    
+            </div>
+        </form>
+    </div>
+    <div class="border-top pt-3">
+        <small class="text-muted">
+            Already have an account? <a class="ml-2" href="{{ url_for('login')}}">login</a>
+        </small>
+    </div>
+</div>    
+{% endblock body %}
 ```
 
 You need to modify / add some imports at the top of the page:
