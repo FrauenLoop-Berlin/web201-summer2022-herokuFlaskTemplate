@@ -487,7 +487,8 @@ Also, if the user is not logged in we will show the login / register links in na
 
 Modify the NavBar in ``map.html``, what you whant to change is how the the items are displayed, now conditionally (with an if block) 
 depending on whether we have a current user that is authenticated / logged in, or not:
-(Careful! The chunck below is not the whole content of file ``map.html``, only the part of the navigation bar that changes for our current feature)
+
+*(Careful! The chunck below is not the whole content of file ``map.html``, only the part of the navigation bar that changes for our current feature)*
 ```
   ...
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
